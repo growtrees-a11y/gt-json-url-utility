@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON & URL Utility Suite</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 30px 0; border-bottom: 1px solid #333; margin-bottom: 30px; }
+        .header h1 { font-size: 2rem; color: #00ff88; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .panel { background: #111; border: 1px solid #333; border-radius: 8px; padding: 20px; }
+        .panel h2 { color: #00ff88; margin-bottom: 15px; font-size: 1.2rem; }
+        textarea { width: 100%; height: 200px; background: #0a0a0a; color: #e0e0e0; border: 1px solid #333; border-radius: 4px; padding: 10px; font-family: monospace; font-size: 14px; resize: vertical; }
+        .btn { background: #00ff88; color: #000; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn:hover { background: #00cc6a; }
+        .output { background: #0a0a0a; border: 1px solid #333; border-radius: 4px; padding: 10px; margin-top: 10px; font-family: monospace; min-height: 100px; white-space: pre-wrap; word-break: break-all; }
+        .error { color: #ff4444; }
+        .success { color: #00ff88; }
+        .ad-slot { background: #1a1a1a; border: 1px dashed #444; display: flex; align-items: center; justify-content: center; margin: 20px 0; border-radius: 4px; color: #666; font-size: 12px; text-transform: uppercase; }
+        .ad-leaderboard { width: 100%; height: 90px; }
+        .ad-banner { width: 120px; height: 600px; }
+        .ad-mobile-banner { width: 100%; height: 50px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>JSON & URL Utility Suite</h1>
+            <p>Real-time parsing, formatting, and URL processing</p>
+        </div>
+
+        <!-- Ad Scaffolding: Leaderboard (728x90) -->
+        <div class="ad-slot ad-leaderboard">Ad Space — IAB Leaderboard 728×90</div>
+
+        <div class="grid">
+            <!-- JSON Panel -->
+            <div class="panel">
+                <h2>JSON Formatter</h2>
+                <textarea id="json-input" placeholder='Enter JSON: {"name": "Alice", "age": 30}'></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="btn" onclick="formatJSON()">Format</button>
+                    <button class="btn" onclick="parseJSON()">Parse</button>
+                    <button class="btn" onclick="validateJSON()">Validate</button>
+                </div>
+                <div class="output" id="json-output"></div>
+            </div>
+
+            <!-- URL Panel -->
+            <div class="panel">
+                <h2>URL Encoder/Decoder</h2>
+                <textarea id="url-input" placeholder="Enter URL or text to encode/decode"></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="btn" onclick="encodeURL()">Encode</button>
+                    <button class="btn" onclick="decodeURL()">Decode</button>
+                </div>
+                <div class="output" id="url-output"></div>
+            </div>
+        </div>
+
+        <!-- Ad Scaffolding: Mobile Banner (320x50) -->
+        <div class="ad-slot ad-mobile-banner">Ad Space — IAB Mobile Banner 320×50</div>
+
+        <!-- Ad Scaffolding: Banner (120x600) — side panel -->
+        <div class="panel" style="max-width: 120px; margin: 20px auto;">
+            <div class="ad-slot ad-banner">Ad Space — IAB Banner 120×600</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/';
+
+        async function formatJSON() {
+            const input = document.getElementById('json-input').value;
+            const output = document.getElementById('json-output');
+            output.textContent = 'Processing...';
+            try {
+                const res = await fetch(`${API_BASE}json/format`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ raw: input })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    output.textContent = data.data;
+                    output.className = 'output success';
+                } else {
+                    output.textContent = `Error at line ${data.error_line || '?'}: ${data.error}`;
+                    output.className = 'output error';
+                }
+            } catch (e) {
+                output.textContent = `Request failed: ${e.message}`;
+                output.className = 'output error';
+            }
+        }
+
+        async function parseJSON() {
+            const input = document.getElementById('json-input').value;
+            const output = document.getElementById('json-output');
+            output.textContent = 'Processing...';
+            try {
+                const res = await fetch(`${API_BASE}json/parse`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ raw: input })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    output.textContent = JSON.stringify(data.data, null, 2);
+                    output.className = 'output success';
+                } else {
+                    output.textContent = `Error at line ${data.error_line || '?'}: ${data.error}`;
+                    output.className = 'output error';
+                }
+            } catch (e) {
+                output.textContent = `Request failed: ${e.message}`;
+                output.className = 'output error';
+            }
+        }
+
+        async function validateJSON() {
+            const input = document.getElementById('json-input').value;
+            const output = document.getElementById('json-output');
+            output.textContent = 'Validating...';
+            try {
+                const res = await fetch(`${API_BASE}json/format`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ raw: input })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    output.textContent = '✓ Valid JSON';
+                    output.className = 'output success';
+                } else {
+                    output.textContent = `✗ Invalid JSON: ${data.error}`;
+                    output.className = 'output error';
+                }
+            } catch (e) {
+                output.textContent = `Request failed: ${e.message}`;
+                output.className = 'output error';
+            }
+        }
+
+        async function encodeURL() {
+            const input = document.getElementById('url-input').value;
+            const output = document.getElementById('url-output');
+            output.textContent = 'Encoding...';
+            try {
+                const res = await fetch(`${API_BASE}url/encode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: input })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    output.textContent = data.data;
+                    output.className = 'output success';
+                } else {
+                    output.textContent = `Error: ${data.error}`;
+                    output.className = 'output error';
+                }
+            } catch (e) {
+                output.textContent = `Request failed: ${e.message}`;
+                output.className = 'output error';
+            }
+        }
+
+        async function decodeURL() {
+            const input = document.getElementById('url-input').value;
+            const output = document.getElementById('url-output');
+            output.textContent = 'Decoding...';
+            try {
+                const res = await fetch(`${API_BASE}url/decode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: input })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    output.textContent = data.data;
+                    output.className = 'output success';
+                } else {
+                    output.textContent = `Error: ${data.error}`;
+                    output.className = 'output error';
+                }
+            } catch (e) {
+                output.textContent = `Request failed: ${e.message}`;
+                output.className = 'output error';
+            }
+        }
+    </script>
+</body>
+</html>
