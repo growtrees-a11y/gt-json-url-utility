@@ -16,8 +16,6 @@ from pydantic import BaseModel
 app = FastAPI(title="PROJ-01: JSON & URL Utility", version="1.0.0")
 
 
-# ── Phase 0: Basic Endpoints ──────────────────────────────────────
-
 class JSONPayload(BaseModel):
     raw: str
 
